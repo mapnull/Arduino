@@ -60,9 +60,7 @@ static inline bool isValidParent( const uint8_t parent ) {
 #endif
 
 void _begin() {
-	#if !defined(MY_DISABLED_SERIAL)
-	    hwInit();
-	#endif
+	hwInit();
 
 	// Call before() in sketch (if it exists)
 	if (before) before();
