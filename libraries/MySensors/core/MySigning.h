@@ -474,7 +474,9 @@
 #define MySigning_h
 
 #include "MySensorCore.h"
-#include "drivers/ATSHA204/ATSHA204.h"
+#ifdef MY_SIGNING_ATSHA204
+	#include "drivers/ATSHA204/ATSHA204.h"
+#endif
 
 #ifdef MY_SIGNING_NODE_WHITELISTING
 typedef struct {
