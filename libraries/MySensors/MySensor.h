@@ -290,7 +290,9 @@
 #include "core/MyMessage.cpp"
 #include "core/MySensorCore.cpp"
 
-#include <Arduino.h>
+#ifdef ARDUINO
+	#include <Arduino.h>
+#endif
 
 #if !defined(MY_CORE_ONLY)
 	#if defined(ARDUINO_ARCH_ESP8266)

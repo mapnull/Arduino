@@ -25,7 +25,9 @@
 
 
 #ifdef __cplusplus
-#include <Arduino.h>
+	#ifdef ARDUINO
+		#include <Arduino.h>
+	#endif
 #endif
 
 // Implement these as functions or macros

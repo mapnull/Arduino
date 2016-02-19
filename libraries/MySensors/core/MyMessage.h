@@ -31,9 +31,11 @@
 #define MyMessage_h
 
 #ifdef __cplusplus
-#include <Arduino.h>
-#include <string.h>
-#include <stdint.h>
+	#ifdef ARDUINO
+		#include <Arduino.h>
+	#endif
+	#include <string.h>
+	#include <stdint.h>
 #endif
 
 #define PROTOCOL_VERSION 2    //!< The version of the protocol
