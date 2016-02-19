@@ -312,7 +312,7 @@ bool transportIsValidFirmware() {
 #endif
 
 
-boolean transportSendWrite(uint8_t to, MyMessage &message) {
+bool transportSendWrite(uint8_t to, MyMessage &message) {
 
 	mSetVersion(message, PROTOCOL_VERSION);
 	uint8_t length = mGetSigned(message) ? MAX_MESSAGE_LENGTH : mGetLength(message);
@@ -329,7 +329,7 @@ boolean transportSendWrite(uint8_t to, MyMessage &message) {
 }
 
 
-boolean transportSendRoute(MyMessage &message) {
+bool transportSendRoute(MyMessage &message) {
 	#if defined(MY_REPEATER_FEATURE)
 	uint8_t last = message.last;
 	#endif
@@ -486,7 +486,7 @@ void transportPresentNode() {
 }
 
 void transportFindParentNode() {
-	static boolean findingParentNode = false;
+	static bool findingParentNode = false;
 
 	if (findingParentNode)
 		return;

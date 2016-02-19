@@ -206,7 +206,7 @@ ControllerConfig getConfig() {
 }
 
 
-boolean _sendRoute(MyMessage &message) {
+bool _sendRoute(MyMessage &message) {
 	// increment heartbeat counter
 	_heartbeat++;
 	#if defined(MY_CORE_ONLY)

@@ -94,8 +94,8 @@ void transportProcess();
 void transportRequestNodeId();
 void transportPresentNode();
 void transportFindParentNode();
-boolean transportSendRoute(MyMessage &message);
-boolean transportSendWrite(uint8_t to, MyMessage &message);
+bool transportSendRoute(MyMessage &message);
+bool transportSendWrite(uint8_t to, MyMessage &message);
 
 // "Interface" functions for radio driver
 bool transportInit();
