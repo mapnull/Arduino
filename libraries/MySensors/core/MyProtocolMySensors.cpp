@@ -20,6 +20,7 @@
 #include "MyConfig.h"
 #include "MyTransport.h"
 #include "MyProtocol.h"
+#include <string.h>
 
 uint8_t protocolH2i(char c);
 

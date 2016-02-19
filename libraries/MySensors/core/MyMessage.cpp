@@ -21,7 +21,16 @@
 #include "MyMessage.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#ifndef ARDUINO
+	#include <utility/itoa.h>
+	#include <utility/ltoa.h>
+	#include <utility/dtostrf.h>
+	#include <utility/utoa.h>
+	#include <utility/ultoa.h>
+	#define min(a,b) ((a)<(b)?(a):(b))
+#endif
 
 MyMessage::MyMessage() {
 	destination = 0; // Gateway is default destination

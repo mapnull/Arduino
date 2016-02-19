@@ -34,9 +34,9 @@
 	#ifdef ARDUINO
 		#include <Arduino.h>
 	#endif
-	#include <string.h>
-	#include <stdint.h>
 #endif
+
+#include <stdint.h>
 
 #define PROTOCOL_VERSION 2    //!< The version of the protocol
 #define MAX_MESSAGE_LENGTH 32 //!< The maximum size of a message (including header)
