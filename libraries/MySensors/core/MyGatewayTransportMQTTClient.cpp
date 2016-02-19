@@ -39,7 +39,7 @@ uint8_t protocolH2i(char c);
  		IPAddress _subnetIp(MY_IP_SUBNET_ADDRESS);
  	#endif
 #else
-	byte _clientMAC[] = { MY_MAC_ADDRESS };
+	uint8_t _clientMAC[] = { MY_MAC_ADDRESS };
 #endif
 
 #if defined(MY_IP_ADDRESS)
@@ -66,7 +66,7 @@ bool gatewayTransportSend(MyMessage &message) {
 
 
 
-void incomingMQTT(char* topic, byte* payload,
+void incomingMQTT(char* topic, uint8_t* payload,
                         unsigned int length)
 {
 	debug(PSTR("Message arrived on topic: %s\n"), topic);

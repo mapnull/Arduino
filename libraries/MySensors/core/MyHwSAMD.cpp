@@ -42,7 +42,7 @@ ISR (WDT_vect)
 
 
 
-void i2c_eeprom_write_byte(unsigned int eeaddress, byte data ) {
+void i2c_eeprom_write_byte(unsigned int eeaddress, uint8_t data ) {
   int rdata = data;
   Wire.beginTransmission(I2C_EEP_ADDRESS);
   Wire.write((int)(eeaddress >> 8)); // MSB
@@ -51,8 +51,8 @@ void i2c_eeprom_write_byte(unsigned int eeaddress, byte data ) {
   Wire.endTransmission();
 }
 
-byte i2c_eeprom_read_byte(unsigned int eeaddress ) {
-  byte rdata = 0xFF;
+uint8_t i2c_eeprom_read_byte(unsigned int eeaddress ) {
+  uint8_t rdata = 0xFF;
   Wire.beginTransmission(I2C_EEP_ADDRESS);
   Wire.write((int)(eeaddress >> 8)); // MSB
   Wire.write((int)(eeaddress & 0xFF)); // LSB

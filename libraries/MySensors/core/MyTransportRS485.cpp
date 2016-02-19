@@ -268,7 +268,7 @@ bool transportSend(uint8_t to, const void* data, uint8_t len)
 	#endif
 
 		// Start of header by writing multiple SOH
-    for(byte w=0;w<1;w++)  _dev.write(SOH);
+    for(uint8_t w=0;w<1;w++)  _dev.write(SOH);
     _dev.write(to);  // Destination address
     cs += to;
     _dev.write(_nodeId); // Source address

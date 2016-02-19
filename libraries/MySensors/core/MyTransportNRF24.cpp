@@ -126,7 +126,7 @@ uint8_t transportReceive(void* data) {
 	_rf24.read(data, len);
 	#if defined(MY_RF24_ENABLE_ENCRYPTION)
 		_aes.set_IV(0);//not sure if necessary
-		_aes.cbc_decrypt((byte*)(data), (byte*)(data), len>16?2:1); // decrypt
+		_aes.cbc_decrypt((uint8_t*)(data), (uint8_t*)(data), len>16?2:1); // decrypt
 	#endif
 	return len;
 }

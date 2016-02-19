@@ -26,7 +26,7 @@
 #if defined(MY_IP_ADDRESS)
 	IPAddress _ethernetGatewayIP(MY_IP_ADDRESS);
 #endif
-byte _ethernetGatewayMAC[] = { MY_MAC_ADDRESS };
+uint8_t _ethernetGatewayMAC[] = { MY_MAC_ADDRESS };
 uint16_t _ethernetGatewayPort = MY_PORT;
 MyMessage _ethernetMsg;
 
