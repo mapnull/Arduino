@@ -298,11 +298,11 @@ void *connected_controller(void* thread_arg)
 	long int sockfd = (long int) thread_arg;
 	char inputString[MY_GATEWAY_MAX_RECEIVE_LENGTH];
 	char *ptr = inputString;
-	int nbytes = 0;
+	int rc, nbytes = 0;
 	MyMessage ethernetMsg;
 
 	while (1) {
-		if (recv(sockfd, ptr, 1, 0) > 0) {
+		if ((rc = recv(sockfd, ptr, 1, 0)) > 0) {
 			if (*ptr == '\n' || *ptr == '\r') {
 				// String terminator
 				*ptr = 0;
@@ -332,7 +332,7 @@ void *connected_controller(void* thread_arg)
 		}
 	}
 	
-	if (nbytes == -1)
+	if (rc == -1)
 		perror("recv");
 
 	for (uint8_t i = 0; i < MY_GATEWAY_MAX_CLIENTS; i++) {
