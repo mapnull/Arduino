@@ -78,21 +78,33 @@ unsigned long hwMillis()
 	return ((curTime.tv_sec - millis_at_start) * 1000) + (curTime.tv_usec / 1000);
 }
 
+// TODO: Not supported!
 int8_t hwSleep(unsigned long ms)
 {
-	// TODO: Not supported!
+	(void)ms;
+
 	return -2;
 }
 
+// TODO: Not supported!
 int8_t hwSleep(uint8_t interrupt, uint8_t mode, unsigned long ms)
 {
-	// TODO: Not supported!
+	(void)interrupt;
+	(void)mode;
+	(void)ms;
+
 	return -2;
 }
 
+// TODO: Not supported!
 int8_t hwSleep(uint8_t interrupt1, uint8_t mode1, uint8_t interrupt2, uint8_t mode2, unsigned long ms)
 {
-  // TODO: Not supported!
+	(void)interrupt1;
+	(void)mode1;
+	(void)interrupt2;
+	(void)mode2;
+	(void)ms;
+	
 	return -2;
 }
 
