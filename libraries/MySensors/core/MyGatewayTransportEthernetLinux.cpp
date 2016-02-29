@@ -363,7 +363,9 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 	
 	if(msg.destination != 0 && msg.sensor != 0 && msg.type != 255)
 	{
+		pthread_mutex_lock(&ethernetMsg_mutex);
 		ethernetMsg_q.push_back(msg);
+		pthread_mutex_unlock(&ethernetMsg_mutex);
 
 		// Forward the data to Ethernet
 		// Likely this is a duplicate from a C_SET that we received and published
