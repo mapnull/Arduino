@@ -70,8 +70,8 @@ void *waiting_controllers(void* thread_arg);
 void *connected_controller(void* thread_arg);
 
 #ifdef MY_GATEWAY_MQTT_CLIENT
-void *mqtt_thread(void *);
-struct mosquitto *mosq;
+	void *mqtt_thread(void *);
+	struct mosquitto *mosq;
 #endif
 
 bool gatewayTransportInit() {
@@ -353,9 +353,9 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 	(void)userdata;
 	
 	if(message->payloadlen){
-		printf("Got a MQTT message %s %s\n", message->topic, (char*)message->payload);
+		debug("MQTT: Got a message %s %s\n", message->topic, (char*)message->payload);
 	}else{
-		printf("Got a MQTT message %s (null)\n", message->topic);
+		debug("MQTT: Got a message %s (null)\n", message->topic);
 	}
 	
 	MyMessage msg;
@@ -380,7 +380,7 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 	}	
 	else
 	{
-		printf("Recieved a bad MQTT message: '%s':'%s'\n destination:%i, sensor:%i, type:%i\n", 
+		debug("MQTT: Recieved a bad message: '%s':'%s'\n destination:%i, sensor:%i, type:%i\n", 
 		message->topic, (char*)message->payload, msg.destination, msg.sensor, msg.type);
 	}
 }
@@ -391,12 +391,12 @@ void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)
 	(void)userdata;
 	
 	if(!result){
-		printf("Connected!\n");
+		debug("MQTT: Connected!\n");
 		/* Subscribe to broker information topics on successful connect. */
 		//connection, message id, topic, qos
 		mosquitto_subscribe(mosq, NULL, protocolFormatMQTTSubscribe(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX), 0);
 	}else{
-		fprintf(stderr, "Connect failed\n");
+		fprintf(stderr, "MQTT: Connect failed\n");
 	}
 }
 
@@ -407,11 +407,11 @@ void mqtt_subscribe_callback(struct mosquitto *mosq, void *userdata, int mid, in
 
 	int i;
 
-	printf("Subscribed (mid: %d): %d", mid, granted_qos[0]);
+	debug("MQTT: Subscribed (mid: %d): %d", mid, granted_qos[0]);
 	for(i=1; i<qos_count; i++){
-		printf(", %d", granted_qos[i]);
+		debug(", %d", granted_qos[i]);
 	}
-	printf("\n");
+	debug("\n");
 }
 
 void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const char *str)
@@ -420,7 +420,7 @@ void mqtt_log_callback(struct mosquitto *mosq, void *userdata, int level, const 
 	(void)userdata;
 	(void)level;
 	/* Pring all log messages regardless of level. */
-	printf("Log: %s\n", str);
+	debug("MQTT: Log: %s\n", str);
 }
 
 void *mqtt_thread(void *)
@@ -439,7 +439,7 @@ void *mqtt_thread(void *)
 	mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
 
 	if(mosquitto_connect(mosq, MQTT_IP, MQTT_PORT, MQTT_KEEPALIVE)){
-		fprintf(stderr, "Unable to connect.\n");
+		fprintf(stderr, "MQTT: Unable to connect.\n");
 		exit(1);
 	}
 
