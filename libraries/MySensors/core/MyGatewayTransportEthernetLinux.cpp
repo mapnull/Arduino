@@ -39,12 +39,6 @@
 	#ifndef MQTT_KEEPALIVE
 		#define MQTT_KEEPALIVE 60
 	#endif
-	#ifndef MY_MQTT_PUBLISH_TOPIC_PREFIX
-		#define MY_MQTT_PUBLISH_TOPIC_PREFIX "mygateway1-out"
-	#endif
-	#ifndef MY_MQTT_SUBSCRIBE_TOPIC_PREFIX
-		#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
-	#endif
 #endif
 
 //TODO
