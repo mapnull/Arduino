@@ -359,39 +359,39 @@ void mqtt_message_callback(struct mosquitto *mosq, void *userdata, const struct 
 	}
 	
 	MyMessage msg;
-	protocolMQTTParse(msg, message->topic, (uint8_t*)message->payload, message->payloadlen);
-	
-	if(msg.destination != 0 && msg.sensor != 0 && msg.type != 255)
-	{
-		pthread_mutex_lock(&ethernetMsg_mutex);
-		ethernetMsg_q.push_back(msg);
-		pthread_mutex_unlock(&ethernetMsg_mutex);
+	if (protocolMQTTParse(msg, message->topic, (uint8_t*)message->payload, message->payloadlen)) {
+		if(msg.destination != 0 && msg.sensor != 0 && msg.type != 255)
+		{
+			pthread_mutex_lock(&ethernetMsg_mutex);
+			ethernetMsg_q.push_back(msg);
+			pthread_mutex_unlock(&ethernetMsg_mutex);
 
-		// Forward the data to Ethernet
-		// Likely this is a duplicate from a C_SET that we received and published
-		// in msg_callback.  Not much we can do to avoid the duplicate as there is 
-		// no way to tell if we performed the publish that is triggering  this callback.
-		char *ethernetMsg = protocolFormat(msg);
+			// Forward the data to Ethernet
+			// Likely this is a duplicate from a C_SET that we received and published
+			// in msg_callback.  Not much we can do to avoid the duplicate as there is 
+			// no way to tell if we performed the publish that is triggering  this callback.
+			char *ethernetMsg = protocolFormat(msg);
 
-		for (uint8_t i = 0; i < MY_GATEWAY_MAX_CLIENTS; i++) {
-			if (controllers[i] == -1)
-				continue;
-			//TODO: sleep/retry before shutdown to check if traffic really is clogged?
-			if (send(controllers[i], ethernetMsg, strlen(ethernetMsg), MSG_NOSIGNAL | MSG_DONTWAIT) == -1) {
-				if (errno == EAGAIN) {
-					// traffic is clogged
-					shutdown(controllers[i], SHUT_RDWR);
-					controllers[i] = -1;
+			for (uint8_t i = 0; i < MY_GATEWAY_MAX_CLIENTS; i++) {
+				if (controllers[i] == -1)
+					continue;
+				//TODO: sleep/retry before shutdown to check if traffic really is clogged?
+				if (send(controllers[i], ethernetMsg, strlen(ethernetMsg), MSG_NOSIGNAL | MSG_DONTWAIT) == -1) {
+					if (errno == EAGAIN) {
+						// traffic is clogged
+						shutdown(controllers[i], SHUT_RDWR);
+						controllers[i] = -1;
+					}
+					perror("send");
 				}
-				perror("send");
 			}
+
+			return;
 		}
-	}	
-	else
-	{
-		debug("MQTT: Recieved a bad message: '%s':'%s'\n destination:%i, sensor:%i, type:%i\n", 
-		message->topic, (char*)message->payload, msg.destination, msg.sensor, msg.type);
 	}
+
+	debug("MQTT: Recieved a bad message: '%s':'%s'\n destination:%i, sensor:%i, type:%i\n", 
+	message->topic, (char*)message->payload, msg.destination, msg.sensor, msg.type);
 }
 
 void mqtt_connect_callback(struct mosquitto *mosq, void *userdata, int result)

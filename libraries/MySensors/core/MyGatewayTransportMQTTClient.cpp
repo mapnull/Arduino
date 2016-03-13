@@ -70,8 +70,7 @@ void incomingMQTT(char* topic, uint8_t* payload,
                         unsigned int length)
 {
 	debug(PSTR("Message arrived on topic: %s\n"), topic);
-	protocolMQTTParse(_mqttMsg, topic, payload, length);
-	_available = true;
+	_available = protocolMQTTParse(_mqttMsg, topic, payload, length);
 }
 
 

@@ -185,6 +185,16 @@
 	// GATEWAY - COMMON FUNCTIONS
 	#include "core/MyGatewayTransport.cpp"
 
+	// MQTT - TOPICS
+	#if defined(MY_GATEWAY_MQTT_CLIENT)
+		#ifndef MY_MQTT_PUBLISH_TOPIC_PREFIX
+			#define MY_MQTT_PUBLISH_TOPIC_PREFIX "mygateway1-out"
+		#endif
+		#ifndef MY_MQTT_SUBSCRIBE_TOPIC_PREFIX
+			#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
+		#endif
+	#endif
+
 	// We currently only support one protocol at the moment, enable it.
 	#include "core/MyProtocolMySensors.cpp"
 
