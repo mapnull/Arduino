@@ -45,6 +45,7 @@
 //#define MQTT_IP "127.0.0.1"
 //#define MQTT_PORT 1883
 //#define MQTT_KEEPALIVE 60
+//#define MQTT_DEBUG
 // Enable these if your MQTT broker requires usenrame/password
 //#define MY_MQTT_USER "username"
 //#define MY_MQTT_PASSWORD "password"

@@ -442,7 +442,9 @@ void *mqtt_thread(void *)
 		exit(1);
 	}
 
+#ifdef MQTT_DEBUG
 	mosquitto_log_callback_set(mosq, mqtt_log_callback);
+#endif
 	mosquitto_connect_callback_set(mosq, mqtt_connect_callback);
 	mosquitto_message_callback_set(mosq, mqtt_message_callback);
 	mosquitto_subscribe_callback_set(mosq, mqtt_subscribe_callback);
