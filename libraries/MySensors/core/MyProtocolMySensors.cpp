@@ -109,6 +109,7 @@ char * protocolFormatMQTTSubscribe(const char* prefix) {
 	return _fmtBuffer;
 }
 
+#ifdef MY_GATEWAY_MQTT_CLIENT
 bool protocolMQTTParse(MyMessage &message, char* topic, uint8_t* payload, unsigned int length) {
 	char *str, *p;
 	uint8_t i = 0;
@@ -185,6 +186,7 @@ bool protocolMQTTParse(MyMessage &message, char* topic, uint8_t* payload, unsign
 
 	return true;
 }
+#endif
 
 uint8_t protocolH2i(char c) {
 	uint8_t i = 0;
