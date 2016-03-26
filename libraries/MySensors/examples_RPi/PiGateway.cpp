@@ -24,6 +24,9 @@
 // Enable debug prints to serial monitor
 #define MY_DEBUG 
 
+// Config file
+#define MY_CONFIG_FILE "/etc/MySensorGateway.cfg";
+
 // Enables and select radio type (if attached)
 #define MY_RADIO_NRF24
 

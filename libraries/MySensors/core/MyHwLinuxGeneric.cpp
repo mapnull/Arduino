@@ -25,7 +25,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-static const char* CONFIG_FILE = "/etc/MySensorGateway.cfg";
+static const char* CONFIG_FILE = MY_CONFIG_FILE;
 static const size_t _length = 1024;	// ATMega328 has 1024 bytes
 static uint8_t _config[_length];	
 static unsigned long millis_at_start;
@@ -46,7 +46,7 @@ bool CheckConfigFile() {
 		myFile.write((const char*)_config, _length);
 		myFile.close();
 	}
-	else if(fileInfo.st_size != _length)
+	else if(fileInfo.st_size < 0 || (size_t)fileInfo.st_size != _length)
 	{
 		debug("Config file %s is not the correct size of %i.  Please remove the file and a new one will be created.\n", CONFIG_FILE, _length);
 		return false;
