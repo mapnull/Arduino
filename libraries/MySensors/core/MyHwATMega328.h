@@ -61,7 +61,7 @@ do { 																\
 #if defined(MY_DISABLED_SERIAL)
 	#define hwInit()
 #else
-	#define hwInit() Serial.begin(MY_BAUD_RATE)
+	#define hwInit() MY_SERIALDEVICE.begin(MY_BAUD_RATE)
 #endif
 
 #define hwWatchdogReset() wdt_reset()

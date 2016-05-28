@@ -38,7 +38,7 @@
 #if defined(MY_DISABLED_SERIAL)
 	#define hwInit()
 #else
-	#define hwInit() Serial.begin(MY_BAUD_RATE); Serial.setDebugOutput(true)
+	#define hwInit() MY_SERIALDEVICE.begin(MY_BAUD_RATE); MY_SERIALDEVICE.setDebugOutput(true)
 #endif
 
 #define hwWatchdogReset() wdt_reset()
