@@ -72,6 +72,9 @@ void _infiniteLoop() {
 		#if defined(LINUX_ARCH_GENERIC)
 			exit(1);
 		#endif
+        #if defined (MY_LEDS_BLINKING_FEATURE)
+            ledsProcess();
+        #endif
 	}
 }
 
@@ -84,6 +87,10 @@ void _begin() {
 
 	debug(PSTR("Starting " MY_NODE_TYPE " (" MY_CAPABILITIES ", " LIBRARY_VERSION ")\n"));
 
+	#if defined(MY_LEDS_BLINKING_FEATURE)
+		ledsInit();
+	#endif
+
 	signerInit();
 
 	#if defined(MY_RADIO_FEATURE)
@@ -91,6 +98,7 @@ void _begin() {
 
 		// Setup radio
 		if (!transportInit()) {
+            setIndication(INDICATION_ERR_INIT_TRANSPORT);
 			debug(PSTR("Radio init failed. Check wiring.\n"));
 			// Nothing more we can do
 			_infiniteLoop();
@@ -106,16 +114,12 @@ void _begin() {
 
 	    // initialize the transport driver
 		if (!gatewayTransportInit()) {
+            setIndication(INDICATION_ERR_INIT_GWTRANSPORT);
 			debug(PSTR("Transport driver init fail\n"));
 			// Nothing more we can do
 			_infiniteLoop();
 		}
 
-	#endif
-
-
-	#if defined(MY_LEDS_BLINKING_FEATURE)
-		ledsInit();
 	#endif
 
 	// Read latest received controller configuration from EEPROM
@@ -133,9 +137,9 @@ void _begin() {
 	#elif defined(MY_RADIO_FEATURE)
 		// Read settings from eeprom
 		hwReadConfigBlock((void*)&_nc, (void*)EEPROM_NODE_ID_ADDRESS, sizeof(NodeConfig));
-		#ifdef MY_OTA_FIRMWARE_FEATURE
+		#if defined(MY_OTA_FIRMWARE_FEATURE)
 			// Read firmware config from EEPROM, i.e. type, version, CRC, blocks
-			hwReadConfigBlock((void*)&_fc, (void*)EEPROM_FIRMWARE_TYPE_ADDRESS, sizeof(NodeFirmwareConfig));
+			readFirmwareSettings();
 		#endif
 
 		_autoFindParent = MY_PARENT_NODE_ID == AUTO;
@@ -146,6 +150,7 @@ void _begin() {
 			// We don't actually know the distance to gw here. Let's pretend it is 1.
 			// If the current node is also repeater, be aware of this.
 			_nc.distance = 1;
+            setIndication(INDICATION_GOT_PARENT);
 		} else if (!isValidParent(_nc.parentNodeId)) {
 			// Auto find parent, but parent in eeprom is invalid. Try find one.
 			transportFindParentNode();
@@ -156,6 +161,7 @@ void _begin() {
 			_nc.nodeId = MY_NODE_ID;
 			// Save static id in eeprom
 			hwWriteConfig(EEPROM_NODE_ID_ADDRESS, MY_NODE_ID);
+            setIndication(INDICATION_GOT_NODEID);
 		} else if (_nc.nodeId == AUTO && isValidParent(_nc.parentNodeId)) {
 			// Try to fetch node-id from gateway
 			transportRequestNodeId();
@@ -179,6 +185,7 @@ void _begin() {
 		} else {
 			// Disable pullup
 			pinMode(MY_NODE_UNLOCK_PIN, INPUT);
+            setIndication(INDICATION_ERR_LOCKED);
 			nodeLock("LDB"); //Locked during boot
 		}
 	} else if (hwReadConfig(EEPROM_NODE_LOCK_COUNTER) == 0xFF) {
@@ -227,7 +234,6 @@ bool _sendRoute(MyMessage &message) {
 		if (message.destination == _nc.nodeId) {
 			// This is a message sent from a sensor attached on the gateway node.
 			// Pass it directly to the gateway transport layer.
-			ledBlinkTx(1);
 			return gatewayTransportSend(message);
 		}
 	#endif
@@ -283,6 +289,7 @@ void _processInternalMessages() {
 	#if !defined(MY_DISABLE_REMOTE_RESET)
 		if (type == I_REBOOT) {
 			// Requires MySensors or other bootloader with watchdogs enabled
+            setIndication(INDICATION_REBOOT);
 			hwReboot();
 		} else
 	#endif
@@ -311,25 +318,60 @@ void _processInternalMessages() {
 		// Deliver time to callback
 		if (receiveTime)
 			receiveTime(_msg.getULong());
-	}
-	#if defined(MY_REPEATER_FEATURE)
-		if (type == I_CHILDREN) {
-			if (_msg.getString()[0] == 'C') {
-				// Clears child relay data for this node
-				debug(PSTR("clear routing table\n"));
-				uint8_t i = 255;
-				do {
-					hwWriteConfig(EEPROM_ROUTES_ADDRESS+i, BROADCAST_ADDRESS);
-				} while (i--);
-				// Clear parent node id & distance to gw
-				hwWriteConfig(EEPROM_PARENT_NODE_ID_ADDRESS, AUTO);
-				hwWriteConfig(EEPROM_DISTANCE_ADDRESS, DISTANCE_INVALID);
-				// Find parent node
-				transportFindParentNode();
-				_sendRoute(build(_msg, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_CHILDREN,false).set(""));
+	} else if (type == I_CHILDREN) {
+			#if defined(MY_REPEATER_FEATURE)
+				if (_msg.data[0] == 'C') {
+					// Clears child relay data for this node
+	                setIndication(INDICATION_CLEAR_ROUTING);
+					debug(PSTR("clear routing table\n"));
+					uint8_t i = 255;
+					do {
+						hwWriteConfig(EEPROM_ROUTES_ADDRESS+i, BROADCAST_ADDRESS);
+					} while (i--);
+					// Clear parent node id & distance to gw
+					hwWriteConfig(EEPROM_PARENT_NODE_ID_ADDRESS, AUTO);
+					hwWriteConfig(EEPROM_DISTANCE_ADDRESS, DISTANCE_INVALID);
+					// Find parent node
+					transportFindParentNode();
+					_sendRoute(build(_msg, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_CHILDREN,false).set("ok"));
+				}
+			#endif
+	} else if (type == I_DEBUG) {
+		#if defined(MY_DEBUG) || defined(MY_SPECIAL_DEBUG)
+			char debug_msg = _msg.data[0];
+			if(debug_msg == 'R'){
+				#if defined(MY_REPEATER_FEATURE)
+					// routing table
+					for(uint8_t cnt=0; cnt!=255;cnt++){
+						uint8_t route = hwReadConfig(EEPROM_ROUTES_ADDRESS+cnt);
+						if (route!=BROADCAST_ADDRESS){
+							debug(PSTR("ID: %d via %d\n"),cnt,route);
+							 uint8_t OutBuf[2] = {cnt,route};
+							_sendRoute(build(_msgTmp, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_DEBUG,false).set(OutBuf,2));
+							wait(100);
+						}
+					}
+				#endif
+			} else if(debug_msg == 'V'){
+				// CPU voltage
+				_sendRoute(build(_msgTmp, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_DEBUG,false).set(hwCPUVoltage()));
+			} else if (debug_msg == 'F') {
+				// CPU frequency in 1/10Mhz
+				_sendRoute(build(_msgTmp, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_DEBUG,false).set(hwCPUFrequency()));
+			} else if (debug_msg == 'M') {
+				// free memory
+				_sendRoute(build(_msgTmp, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_DEBUG,false).set(hwFreeMem()));
+			} else if (debug_msg == 'E') {
+				// clear MySensors eeprom area and reboot
+				_sendRoute(build(_msgTmp, _nc.nodeId, GATEWAY_ADDRESS, NODE_SENSOR_ID, C_INTERNAL, I_CHILDREN,false).set("ok"));
+				for (int i=EEPROM_START;i<EEPROM_LOCAL_CONFIG_ADDRESS;i++) {
+					hwWriteConfig(i,0xFF);  
+				}
+                setIndication(INDICATION_REBOOT);
+				hwReboot();
 			}
-		}
-	#endif
+		#endif
+	}
 }
 
 
@@ -380,7 +422,10 @@ int8_t sleep(unsigned long ms) {
 		#if defined(MY_RADIO_FEATURE)
 			transportPowerDown();
 		#endif
-		return hwSleep(ms);
+        setIndication(INDICATION_SLEEP);
+		const int8_t res = hwSleep(ms);
+        setIndication(INDICATION_WAKEUP);
+        return res;
 	#endif
 }
 
@@ -410,7 +455,10 @@ int8_t sleep(uint8_t interrupt, uint8_t mode, unsigned long ms) {
 		#if defined(MY_RADIO_FEATURE)
 			transportPowerDown();
 		#endif
-		return hwSleep(interrupt, mode, ms);
+        setIndication(INDICATION_SLEEP);
+		const int8_t res = hwSleep(interrupt, mode, ms);
+        setIndication(INDICATION_WAKEUP);
+        return res;
 	#endif
 }
 
@@ -442,7 +490,10 @@ int8_t sleep(uint8_t interrupt1, uint8_t mode1, uint8_t interrupt2, uint8_t mode
 		#if defined(MY_RADIO_FEATURE)
 			transportPowerDown();
 		#endif
-		return hwSleep(interrupt1, mode1, interrupt2, mode2, ms);
+        setIndication(INDICATION_SLEEP);
+		const int8_t res = hwSleep(interrupt1, mode1, interrupt2, mode2, ms);
+        setIndication(INDICATION_WAKEUP);
+        return res;
 	#endif
 }
 
@@ -460,6 +511,7 @@ void nodeLock(const char* str) {
 	// Make sure EEPROM is updated to locked status
 	hwWriteConfig(EEPROM_NODE_LOCK_COUNTER, 0);
 	while (1) {
+        setIndication(INDICATION_ERR_LOCKED);
 		debug(PSTR("Node is locked. Ground pin %d and reset to unlock.\n"), MY_NODE_UNLOCK_PIN);
 		#if defined(MY_GATEWAY_ESP8266)
 			yield();
@@ -469,7 +521,9 @@ void nodeLock(const char* str) {
 		#if defined(MY_RADIO_FEATURE)
 			transportPowerDown();
 		#endif
+        setIndication(INDICATION_SLEEP);
 		(void)hwSleep((unsigned long)1000*60*30); // Sleep for 30 min before resending LOCKED message
+        setIndication(INDICATION_WAKEUP);
 	}
 }
 #endif
