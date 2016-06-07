@@ -50,11 +50,7 @@ EthernetClient _ethClient;
 PubSubClient _client(_ethClient);
 bool _connecting = true;
 bool _available = false;
-char _convBuffer[MAX_PAYLOAD*2+1];
-char _fmtBuffer[MY_GATEWAY_MAX_SEND_LENGTH];
 MyMessage _mqttMsg;
-
-
 
 bool gatewayTransportSend(MyMessage &message) {
 	if (!_client.connected())
@@ -62,12 +58,10 @@ bool gatewayTransportSend(MyMessage &message) {
 
 	setIndication(INDICATION_GW_TX);
 
-	char *mqttMsg = protocolFormatMQTT(message);
-	debug(PSTR("Sending message on topic: %s\n"), mqttMsg);
-	return _client.publish(mqttMsg, message.getString(_convBuffer));
+	char *topic = protocolFormatMQTTTopic(MY_MQTT_PUBLISH_TOPIC_PREFIX, message);
+	debug(PSTR("Sending message on topic: %s\n"), topic);
+	return _client.publish(topic, message.getString(_convBuffer));
 }
-
-
 
 void incomingMQTT(char* topic, uint8_t* payload,
                         unsigned int length)
@@ -75,7 +69,6 @@ void incomingMQTT(char* topic, uint8_t* payload,
 	debug(PSTR("Message arrived on topic: %s\n"), topic);
 	_available = protocolMQTTParse(_mqttMsg, topic, payload, length);
 }
-
 
 bool reconnectMQTT() {
 	debug(PSTR("Attempting MQTT connection...\n"));
@@ -146,7 +139,6 @@ bool gatewayTransportInit() {
 	return true;
 }
 
-
 bool gatewayTransportAvailable() {
 	if (_connecting)
 		return false;
@@ -167,16 +159,4 @@ MyMessage & gatewayTransportReceive() {
 	// Return the last parsed message
 	_available = false;
 	return _mqttMsg;
-}
-
-
-uint8_t protocolH2i(char c) {
-	uint8_t i = 0;
-	if (c <= '9')
-		i += c - '0';
-	else if (c >= 'a')
-		i += c - 'a' + 10;
-	else
-		i += c - 'A' + 10;
-	return i;
 }
