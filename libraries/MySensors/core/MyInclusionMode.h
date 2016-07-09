@@ -1,4 +1,4 @@
-/**
+/*
  * The MySensors Arduino library handles the wireless radio link and protocol
  * between your home built sensors/actuators and HA controller of choice.
  * The sensors forms a self healing radio network with optional repeaters. Each
@@ -20,7 +20,7 @@
 #ifndef MyInclusionMode_h
 #define MyInclusionMode_h
 
-#include "MySensorCore.h"
+#include "MySensorsCore.h"
 
 
 extern bool gatewayTransportSend(MyMessage &message);

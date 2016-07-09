@@ -18,14 +18,14 @@
  */
 
 /**
- * @file MySensor.h
+ * @file MySensors.h
  *
  * MySensors main interface (includes all necessary code for the library)
  */
-#ifndef MySensor_h
-#define MySensor_h
+#ifndef MySensors_h
+#define MySensors_h
 
-#include "core/MySensorCore.h"
+#include "core/MySensorsCore.h"
 
 // Detect node type
 /**
@@ -52,6 +52,10 @@
 	#define MY_NODE_TYPE "sensor"
 #endif
 
+#if defined(MY_GATEWAY_RASPBERRYPI)
+	#define MY_GATEWAY_LINUX
+#endif
+
 // Enable radio "feature" if one of the radio types was enabled
 #if defined(MY_RADIO_NRF24) || defined(MY_RADIO_RFM69) || defined(MY_RS485)
 	#define MY_RADIO_FEATURE
@@ -68,7 +72,7 @@
 #elif defined(ARDUINO_ARCH_AVR)
 	#include "core/MyHwATMega328.cpp"
 #elif defined(ARDUINO_ARCH_SAMD)
-	#include "core/MyHwSAMD.cpp"
+        #include "core/MyHwSAMD.cpp"
 #elif defined(LINUX_ARCH_GENERIC)
 	// Remove PSTR macros from debug prints
 	#undef PSTR
@@ -183,30 +187,59 @@
 	#endif
 #endif
 
-#if defined(MY_GATEWAY_FEATURE)
-	// GATEWAY - COMMON FUNCTIONS
-	#include "core/MyGatewayTransport.cpp"
 
-	// MQTT - TOPICS
-	#if defined(MY_GATEWAY_MQTT_CLIENT)
-		#ifndef MY_MQTT_PUBLISH_TOPIC_PREFIX
-			#define MY_MQTT_PUBLISH_TOPIC_PREFIX "mygateway1-out"
+// FLASH
+#if defined(MY_OTA_FIRMWARE_FEATURE)
+	#include "drivers/SPIFlash/SPIFlash.cpp"
+	#include "core/MyOTAFirmwareUpdate.cpp"
+#endif
+
+// GATEWAY - TRANSPORT
+#if defined(MY_GATEWAY_MQTT_CLIENT)
+	#if defined(MY_RADIO_FEATURE)
+		// We assume that a gateway having a radio also should act as repeater
+		#define MY_REPEATER_FEATURE
+	#endif
+	// GATEWAY - COMMON FUNCTIONS
+	// We support MQTT Client using W5100 and ESP8266
+	// For RaspberryPi and Linux MY_CONTROLLER_URL_ADDRESS, MY_CONTROLLER_IP_ADDRESS
+	// and MY_MQTT_CLIENT_ID are not support at the moment
+	#if !defined(MY_MQTT_PUBLISH_TOPIC_PREFIX)
+		#error You must specify a topic publish prefix MY_MQTT_PUBLISH_TOPIC_PREFIX for this MQTT client
+	#endif
+	#if !defined(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX)
+		#error You must specify a topic subscribe prefix MY_MQTT_SUBSCRIBE_TOPIC_PREFIX for this MQTT client
+	#endif
+
+	#if !defined(MY_GATEWAY_LINUX)
+		#if !(defined(MY_CONTROLLER_URL_ADDRESS) || defined(MY_CONTROLLER_IP_ADDRESS))
+			#error You must specify MY_CONTROLLER_IP_ADDRESS or MY_CONTROLLER_URL_ADDRESS
 		#endif
-		#ifndef MY_MQTT_SUBSCRIBE_TOPIC_PREFIX
-			#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
+
+		#if !defined(MY_MQTT_CLIENT_ID)
+			#error You must define a unique MY_MQTT_CLIENT_ID for this MQTT client
 		#endif
 	#endif
 
-	// We currently only support one protocol at the moment, enable it.
+	#include "core/MyGatewayTransport.cpp"
+	#include "core/MyProtocolMySensors.cpp"
+
+	#if defined(MY_GATEWAY_LINUX)
+		#include "core/MyGatewayTransportEthernetLinux.cpp"
+	#else
+		#include "drivers/PubSubClient/PubSubClient.cpp"
+		#include "core/MyGatewayTransportMQTTClient.cpp"
+	#endif
+#elif defined(MY_GATEWAY_FEATURE)
+	// GATEWAY - COMMON FUNCTIONS
+	#include "core/MyGatewayTransport.cpp"
+
 	#include "core/MyProtocolMySensors.cpp"
 
 	// GATEWAY - CONFIGURATION
 	#if defined(MY_RADIO_FEATURE)
 		// We assume that a gateway having a radio also should act as repeater
 		#define MY_REPEATER_FEATURE
-	#endif
-	#if defined(MY_GATEWAY_RASPBERRYPI)
-		#define MY_GATEWAY_LINUX
 	#endif
 	#if defined(MY_CONTROLLER_IP_ADDRESS)
 		#define MY_GATEWAY_CLIENT_MODE
@@ -216,23 +249,13 @@
 	#endif
 	#if defined(MY_GATEWAY_ESP8266)
 		// GATEWAY - ESP8266
-		#if defined(MY_GATEWAY_MQTT_CLIENT)
-			#include "drivers/pubsubclient/src/PubSubClient.cpp"
-			#include "core/MyGatewayTransportMQTTClient.cpp"
-		#else
-			#include "core/MyGatewayTransportEthernet.cpp"
-		#endif
+		#include "core/MyGatewayTransportEthernet.cpp"
 	#elif defined(MY_GATEWAY_LINUX)
-		// GATEWAY - Generic Linux (RaspberryPi, BBB)
+		// GATEWAY - Generic Linux (RaspberryPi, BBB, ...)
 		#include "core/MyGatewayTransportEthernetLinux.cpp"
 	#elif defined(MY_GATEWAY_W5100)
 		// GATEWAY - W5100
-		#if defined(MY_GATEWAY_MQTT_CLIENT)
-			#include "drivers/pubsubclient/src/PubSubClient.cpp"
-			#include "core/MyGatewayTransportMQTTClient.cpp"
-		#else
-			#include "core/MyGatewayTransportEthernet.cpp"
-		#endif
+		#include "core/MyGatewayTransportEthernet.cpp"
 	#elif defined(MY_GATEWAY_ENC28J60)
 		// GATEWAY - ENC28J60
 		#if defined(MY_USE_UDP)
@@ -242,32 +265,9 @@
 	#elif defined(MY_GATEWAY_SERIAL)
 		// GATEWAY - SERIAL
 		#include "core/MyGatewayTransportSerial.cpp"
-	
 	#endif
 #endif
 
-// GATEWAY - MQTT
-#if defined(MY_GATEWAY_MQTT_CLIENT) && !defined(MY_GATEWAY_LINUX)
-	// GATEWAY - COMMON FUNCTIONS
-	// We only support MQTT Client using W5100, ESP8266 or Linux/RasperryPi at the moment
-	#if !(defined(MY_GATEWAY_ESP8266) || defined(MY_GATEWAY_W5100) || defined(MY_GATEWAY_LINUX))
-		#error We only support MQTT Client using W5100, ESP8266 or Linux/RasperryPi at the moment
-	#endif
-	
-	#if !(defined(MY_CONTROLLER_URL_ADDRESS) || defined(MY_CONTROLLER_IP_ADDRESS))
-		#error You must specify MY_CONTROLLER_IP_ADDRESS or MY_CONTROLLER_URL_ADDRESS
-	#endif
-
-	#if !defined(MY_MQTT_PUBLISH_TOPIC_PREFIX)
-		#error You must specify a topic publish prefix MY_MQTT_PUBLISH_TOPIC_PREFIX for this MQTT client
-	#endif
-	#if !defined(MY_MQTT_SUBSCRIBE_TOPIC_PREFIX)
-		#error You must specify a topic subscribe prefix MY_MQTT_SUBSCRIBE_TOPIC_PREFIX for this MQTT client
-	#endif
-	#if !defined(MY_MQTT_CLIENT_ID)
-		#error You must define a unique MY_MQTT_CLIENT_ID for this MQTT client
-	#endif
-#endif
 
 // RADIO
 #if defined(MY_RADIO_NRF24) || defined(MY_RADIO_RFM69) || defined(MY_RS485)
@@ -279,11 +279,6 @@
 		#include "drivers/AVR/DigitalIO/DigitalIO.h"
 	#endif
 
-	// FLASH
-	#ifdef MY_OTA_FIRMWARE_FEATURE
-		#include "drivers/SPIFlash/SPIFlash.cpp"
-		#include "core/MyOTAFirmwareUpdate.cpp"
-	#endif
 	#include "core/MyTransport.cpp"
 	#if (defined(MY_RADIO_NRF24) && defined(MY_RADIO_RFM69)) || (defined(MY_RADIO_NRF24) && defined(MY_RS485)) || (defined(MY_RADIO_RFM69) && defined(MY_RS485))
 		#error Only one forward link driver can be activated
@@ -326,7 +321,7 @@
 
 #include "core/MyCapabilities.h"
 #include "core/MyMessage.cpp"
-#include "core/MySensorCore.cpp"
+#include "core/MySensorsCore.cpp"
 
 #ifdef ARDUINO
 	#include <Arduino.h>

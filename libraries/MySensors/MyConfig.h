@@ -82,6 +82,52 @@
 //#define MY_RS485
 
 /**
+* @def MY_TRANSPORT_SANITY_CHECK
+* @brief If enabled, node will check transport in regular intervals to detect HW issues and re-initialize in case of failure. This feature is enabled for all repeater nodes (incl. GW)
+*/
+//#define MY_TRANSPORT_SANITY_CHECK
+/**
+* @def MY_TRANSPORT_SANITY_CHECK_INTERVAL
+* @brief Interval (in ms) of transport sanity checks
+*/
+#ifndef MY_TRANSPORT_SANITY_CHECK_INTERVAL
+#define MY_TRANSPORT_SANITY_CHECK_INTERVAL ((uint32_t)60000)
+#endif
+/**
+ * @def MY_REGISTRATION_FEATURE
+ * @brief If enabled, node has to register to gateway/controller before allowed to send sensor data.
+ */
+#define MY_REGISTRATION_FEATURE
+
+ /**
+ * @def MY_REGISTRATION_RETRIES
+ * @brief Number of registration retries if no reply received from GW/controller
+ */
+
+#ifndef MY_REGISTRATION_RETRIES
+#define MY_REGISTRATION_RETRIES 3
+#endif
+
+ /**
+ * @def MY_REGISTRATION_DEFAULT
+ * @brief Node registration default - this applies if no registration response is recieved from controller
+ */
+
+#define MY_REGISTRATION_DEFAULT true
+
+ /**
+ * @def MY_REGISTRATION_CONTROLLER
+ * @brief If enabled, node registration request has to be handled by controller
+ */
+ // #define MY_REGISTRATION_CONTROLLER
+
+ /**
+ * @def MY_CORE_COMPATIBILITY_CHECK
+ * @brief If enabled, library compatibility is checked during node registration. Incompatible libraries are unable to send sensor data.
+ */
+#define MY_CORE_COMPATIBILITY_CHECK
+
+/**
  * @def MY_NODE_ID
  * @brief Node id defaults to AUTO (tries to fetch id from controller).
  */
@@ -96,6 +142,12 @@
 #ifndef MY_PARENT_NODE_ID
 #define MY_PARENT_NODE_ID AUTO
 #endif
+
+/**
+ * @def MY_PARENT_NODE_IS_STATIC
+ * @brief Enable MY_PARENT_NODE_IS_STATIC to disable fall back if parent node fails
+ */
+//#define MY_PARENT_NODE_IS_STATIC
 
 // Enables repeater functionality (relays messages from other nodes)
 // #define MY_REPEATER_FEATURE
@@ -187,9 +239,9 @@
 // The following defines can be used to set the port pin, that the LED is connected to
 // If one of the following is defined here, or in the sketch, MY_LEDS_BLINKING_FEATURE will be
 // enabled by default. (Replace x with the pin number you have the LED on)
-//#define MY_DEFAULT_ERR_LED x
-//#define MY_DEFAULT_TX_LED x
-//#define MY_DEFAULT_RX_LED x
+//#define MY_DEFAULT_ERR_LED_PIN x
+//#define MY_DEFAULT_TX_LED_PIN x
+//#define MY_DEFAULT_RX_LED_PIN x
 
 /**********************************************
 *  Gateway inclusion button/mode configuration
@@ -340,13 +392,13 @@
 /**
  * @def MY_DEBUG_VERBOSE_RF24
  * @brief Enable MY_DEBUG_VERBOSE_RF24 flag for verbose debug prints related to the RF24 driver. Requires DEBUG to be enabled.
- */ 
+ */
 //#define MY_DEBUG_VERBOSE_RF24
 
 /**
  * @def MY_RF24_SPI_MAX_SPEED
  * @brief MY_RF24_SPI_MAX_SPEED to overrule default nRF24L01+ SPI speed.
- */ 
+ */
 //#define MY_RF24_SPI_MAX_SPEED 4000000
 
 /**
@@ -636,7 +688,7 @@
  *
  * If using a secure bootloader, grounding the pin is the only option to reactivate the node.
  * If using stock Android bootloader or a DualOptiBoot it is also possible to download a sketch
- * using serial protocol to erase EEPROM to unlock the node. 
+ * using serial protocol to erase EEPROM to unlock the node.
  */
 #ifndef MY_NODE_UNLOCK_PIN
 #define MY_NODE_UNLOCK_PIN 14
@@ -684,4 +736,7 @@
 #define MY_SIGNING_REQUEST_SIGNATURES
 #define MY_SIGNING_NODE_WHITELISTING {{.nodeId = GATEWAY_ADDRESS,.serial = {0x09,0x08,0x07,0x06,0x05,0x04,0x03,0x02,0x01}}}
 #define MY_IS_RFM69HW
+#define MY_PARENT_NODE_IS_STATIC
+#define MY_REGISTRATION_CONTROLLER
+#define MY_DEBUG_VERBOSE_RF24
 #endif

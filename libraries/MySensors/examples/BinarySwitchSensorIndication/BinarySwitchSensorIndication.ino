@@ -38,7 +38,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <MsTimer2.h>
 #include <SPI.h>
-#include <MySensor.h>
+#include <MySensors.h>
 #include <Bounce2.h>
 
 #define LED_CYCLE_MS    30   // Update rate of LEDs, in [ms].
@@ -54,13 +54,13 @@ static Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, NEO_PIN, NEO_GRB + NEO_KH
 // Change to V_LIGHT if you use S_LIGHT in presentation below
 MyMessage msg(CHILD_ID,V_TRIPPED);
 
-#define BLINK_TIMES(x)  (x<<4)
+#define BLINK_TIMES(x)  ((x)<<4)
 
 static uint8_t ledR = 0;
 static uint8_t ledG = 0;
 static uint8_t ledB = 0;
 
-static void updateLed(void)
+void updateLed(void)
 {
   // Update the pattern (setting leds).
   if (ledR > 0) --ledR;

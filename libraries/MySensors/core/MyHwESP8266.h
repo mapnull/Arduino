@@ -23,7 +23,6 @@
 
 #ifdef __cplusplus
 #include <Arduino.h>
-//#include <SPI.h>
 #endif
 
 #define MY_SERIALDEVICE Serial
@@ -42,7 +41,7 @@
 #endif
 
 #define hwWatchdogReset() wdt_reset()
-#define hwReboot() wdt_enable(WDTO_15MS); while (1)
+#define hwReboot() ESP.restart();
 #define hwMillis() millis()
 
 void hwReadConfigBlock(void* buf, void* adr, size_t length);

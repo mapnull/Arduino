@@ -1,6 +1,6 @@
 // Initialize library and handle sketch functions like we want to
 
-#include "MySensorCore.h"
+#include "MySensorsCore.h"
 
 int main(void) {
 	_begin(); // Startup MySensors library

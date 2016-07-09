@@ -56,7 +56,7 @@
 //#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
 #endif
 
-#include <MySensor.h>
+#include <MySensors.h>
 
 using namespace std;
 

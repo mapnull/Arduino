@@ -60,18 +60,9 @@ static bool RF24_sendMessage( uint8_t recipient, const void* buf, uint8_t len ) 
 	return ok;
 }
 
-static bool RF24_isDataAvailable(uint8_t* to) {
+static bool RF24_isDataAvailable() {
 	uint8_t pipe_num = 255;
 	_rf24.available(&pipe_num);
-	#if defined(MY_DEBUG_VERBOSE_RF24)
-		if (pipe_num <= 5)
-			RF24_DEBUG(PSTR("Data available on pipe %d\n"), pipe_num);	
-	#endif	
-
-	if (pipe_num == NODE_PIPE)
-		*to = MY_RF24_NODE_ADDRESS;
-	else if (pipe_num == BROADCAST_PIPE)
-		*to = BROADCAST_ADDRESS;
 	return (pipe_num <= 5);
 }
 
@@ -97,6 +88,15 @@ static uint8_t RF24_getNodeID(void) {
 	return MY_RF24_NODE_ADDRESS;
 }
 
+bool RF24_sanityCheck(void) {
+	// detect HW defect ot interrupted SPI line, CE disconnect cannot be detected	
+	if (_rf24.getPALevel() != MY_RF24_PA_LEVEL || _rf24.getDataRate() != MY_RF24_DATARATE ||
+			_rf24.getChannel() != MY_RF24_CHANNEL) {
+		return false;
+	}
+	return true;
+}
+
 static bool RF24_initialize(void) {
 	// start up the radio library
 	_rf24.begin();
@@ -119,13 +119,11 @@ static bool RF24_initialize(void) {
 	_rf24.setDataRate(MY_RF24_DATARATE);
 	// sanity check
 	#if defined(MY_RF24_SANITY_CHECK)
-		if (_rf24.getPALevel() != MY_RF24_PA_LEVEL || _rf24.getDataRate() != MY_RF24_DATARATE) {
-			RF24_DEBUG(PSTR("RF24 sanity check failed"));
+		if (!RF24_sanityCheck()) {
+			RF24_DEBUG(PSTR("RF24:Sanity check failed: configuration mismatch! Check wiring, replace module or non-P version\n"));
 			return false;
 		}
 	#endif
-	// toggle features (necessary on some clones)
-	_rf24.toggle_features();
 	// enable Dynamic payload
 	_rf24.enableDynamicPayloads();
 	// enable ACK payload

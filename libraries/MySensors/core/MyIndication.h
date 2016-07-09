@@ -1,4 +1,4 @@
-/**
+/*
  * The MySensors Arduino library handles the wireless radio link and protocol
  * between your home built sensors/actuators and HA controller of choice.
  * The sensors forms a self healing radio network with optional repeaters. Each
@@ -34,6 +34,8 @@ typedef enum {
     INDICATION_GOT_PARENT,                    //!< Found parent node.
     INDICATION_REQ_NODEID,                    //!< Request node ID.
     INDICATION_GOT_NODEID,                    //!< Got a node ID.
+    INDICATION_REQ_REGISTRATION,              //!< Request node registration.
+    INDICATION_GOT_REGISTRATION,              //!< Got registration reponse.
     INDICATION_REBOOT,                        //!< Rebooting node.
     INDICATION_PRESENT,                       //!< Presenting node to gateway.
     INDICATION_CLEAR_ROUTING,                 //!< Clear rrouting table requested.
@@ -44,6 +46,7 @@ typedef enum {
 
     INDICATION_ERR_START = 100,
     INDICATION_ERR_TX,                        //!< Failed to transmit message.
+	INDICATION_ERR_TRANSPORT_FAILURE,		  //!< Transport failure.
     INDICATION_ERR_INIT_TRANSPORT,            //!< MySensors transport hardware (radio) init failure.
     INDICATION_ERR_FIND_PARENT,               //!< Failed to find parent node.
     INDICATION_ERR_GET_NODEID,                //!< Failed to receive node ID.
