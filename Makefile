@@ -11,8 +11,8 @@ CONFIG_FILE=Makefile.inc
 
 include $(CONFIG_FILE)
 
-GATEWAY=examples_RPi/PiGateway
-GATEWAY_SOURCES=examples_RPi/PiGateway.cpp $(wildcard ./utility/*.cpp)
+GATEWAY=examples_RPi/MySGateway
+GATEWAY_SOURCES=examples_RPi/MySGateway.cpp $(wildcard ./utility/*.cpp)
 GATEWAY_OBJECTS=$(patsubst %.cpp,%.o,$(GATEWAY_SOURCES))
 DEPS+=$(patsubst %.cpp,%.d,$(GATEWAY_SOURCES))
 
@@ -49,8 +49,15 @@ $(CONFIG_FILE):
 install: all install-gateway install-initscripts
 
 install-gateway: 
-	@echo "Installing $(GATEWAY) to $(EXAMPLES_DIR)"
-	@install -m 0755 $(GATEWAY) $(EXAMPLES_DIR)
+	@echo "Installing $(GATEWAY) to $(GATEWAY_DIR)"
+	@install -m 0755 $(GATEWAY) $(GATEWAY_DIR)
 
 install-initscripts:
-	
+	if [[ `systemctl` =~ -\.mount ]]; then \
+		install -m0644 initscripts/mysgateway.systemd /etc/systemd/system/mysgateway.service && \
+		sed -i -e "s|%gateway_dir%|${GATEWAY_DIR}|g" /etc/systemd/system/mysgateway.service && \
+		systemctl daemon-reload; \
+	elif [[ -f /etc/init.d/cron && ! -h /etc/init.d/cron ]]; then \
+		install -m0755 initscripts/mysgateway.sysvinit /etc/init.d/mysgateway && \
+		sed -i -e "s|%gateway_dir%|${GATEWAY_DIR}|g" /etc/init.d/mysgateway; \
+	fi

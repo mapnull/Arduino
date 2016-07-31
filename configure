@@ -24,16 +24,19 @@ Building options:
     --extra-ldflags=<LDFLAGS>   Extra C flags passed to linking. []
     --libname=<LIBNAME>         Library name. [rf24]
     --cxx_compiler=<CXX>        C++ compiler [arm-linux-gnueabihf-g++][g++]
-    --no-clean                  Don't clean previous build artifacts
+    --no-clean                  Don't clean previous build artifacts.
+    --rf24h-lib-dir             RF24 library files directory.
 
 Installation options:
     --prefix=<PREFIX>           Installation prefix path. [/usr/local]
-    --lib-dir=<DIR>             Library target installation directory. [PREFIX/lib]
-    --header-dir=<DIR>          Header files target installation directory. [PREFIX/include]
-    --examples-dir=<DIR>        Example files installation directory. [PREFIX/bin]
+    --gateway-dir=<DIR>         Gateway files installation directory. [PREFIX/bin]       
 
-Gateway options:
+MySensors options:
     --enable-mqtt               Enables support for MQTT.
+    --my-rf24-channel=<0-125>   RF channel for the sensor net, 0-125.
+    --my-rf24-pa-level=[RF24_PA_MAX|RF24_PA_LOW]
+                                RF24 PA level.
+    --my-config-file=<FILE>     Config file path. [/etc/MySensorGateway.cfg]
 
 EOF
 }
@@ -169,7 +172,7 @@ function gcc_cpu_flags {
     echo ${flags}
 }
 
-params="OS SOC CPUFLAGS CXXFLAGS LDFLAGS PREFIX CXX RF24H_LIB_DIR EXAMPLES_DIR"
+params="OS SOC CPUFLAGS CXXFLAGS LDFLAGS PREFIX CXX RF24H_LIB_DIR GATEWAY_DIR"
 
 for opt do
     if [ "$opt" = "-h" ] || [ "$opt" = "--help" ]; then
@@ -205,12 +208,21 @@ for opt do
     --rf24h-lib-dir=*)
         RF24H_LIB_DIR="$optarg"
         ;;
-    --examples-dir=*)
-        EXAMPLES_DIR="$optarg"
+    --gateway-dir=*)
+        GATEWAY_DIR="$optarg"
         ;;
     --enable-mqtt*)
-		LDFLAGS="-lmosquitto $LDFLAGS"
-		CXXFLAGS="-DMY_GATEWAY_MQTT_CLIENT $CXXFLAGS"
+        LDFLAGS="-lmosquitto $LDFLAGS"
+        CXXFLAGS="-DMY_GATEWAY_MQTT_CLIENT $CXXFLAGS"
+        ;;
+    --my-rf24-channel=*)
+        CXXFLAGS="-DMY_RF24_CHANNEL=${optarg} $CXXFLAGS"
+        ;;
+    --my-rf24-pa-level=*)
+        CXXFLAGS="-DMY_RF24_PA_LEVEL=${optarg} $CXXFLAGS"
+        ;;
+    --my-config-file=*)
+        CXXFLAGS="-DMY_CONFIG_FILE=${optarg} $CXXFLAGS"
         ;;
     *)
         echo "[WARNING] Unknown option detected:$opt, ignored"
@@ -220,7 +232,7 @@ done
 
 PREFIX=${PREFIX:-/usr/local}
 RF24H_LIB_DIR=${PREFIX}/include/RF24
-EXAMPLES_DIR=${EXAMPLES_DIR:-${PREFIX}/bin}
+GATEWAY_DIR=${GATEWAY_DIR:-${PREFIX}/bin}
 CXX=${CXX:-g++}
 
 if [ -z "${SOC}" ]; then
@@ -240,7 +252,7 @@ fi
 CXXFLAGS="$CPUFLAGS -Ofast -g -Wall -Wextra -DLINUX_ARCH_GENERIC $CXXFLAGS"
 
 if [[ $TYPE == "RPi2" || $TYPE == "RPi3" || $REV == "0010" ]]; then
-    CXXFLAGS+="-D__PI_BPLUS"
+    CXXFLAGS+="-D__RPI_BPLUS"
 fi  
 
 LDFLAGS="-pthread -lrf24-bcm $LDFLAGS"

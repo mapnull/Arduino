@@ -25,7 +25,7 @@
 #define MY_DEBUG 
 
 // Config file
-#define MY_CONFIG_FILE "/etc/MySensorGateway.cfg";
+#define MY_LINUX_CONFIG_FILE "/etc/MySensorGateway.cfg"
 
 // Enables and select radio type (if attached)
 #define MY_RADIO_NRF24
@@ -44,16 +44,17 @@
 
 /* MQTT BUILD */
 #ifdef MY_GATEWAY_MQTT_CLIENT
-//Linux MQTT Defines - Uncomment and modify as needed.  Written as defaults.
-//#define MQTT_IP "127.0.0.1"
-//#define MQTT_PORT 1883
-//#define MQTT_KEEPALIVE 60
-//#define MQTT_DEBUG
-// Enable these if your MQTT broker requires usenrame/password
-//#define MY_MQTT_USER "username"
-//#define MY_MQTT_PASSWORD "password"
-//#define MY_MQTT_PUBLISH_TOPIC_PREFIX "mygateway1-out"
-//#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
+	//Linux MQTT Defines - Uncomment and modify as needed.  Written as defaults.
+	//#define MQTT_DEBUG
+	#define MQTT_IP "127.0.0.1"
+	#define MQTT_PORT 1883
+	#define MQTT_KEEPALIVE 60
+	#define MY_MQTT_PUBLISH_TOPIC_PREFIX "mygateway1-out"
+	#define MY_MQTT_SUBSCRIBE_TOPIC_PREFIX "mygateway1-in"
+
+	// Enable these if your MQTT broker requires usenrame/password
+	//#define MY_MQTT_USER "username"
+	//#define MY_MQTT_PASSWORD "password"
 #endif
 
 #include <MySensors.h>

@@ -50,7 +50,6 @@ typedef struct
 		IPAddress _gatewayIp(MY_IP_GATEWAY_ADDRESS);
 		IPAddress _subnetIp(MY_IP_SUBNET_ADDRESS);
 	#endif
-	static bool clientsConnected[MY_GATEWAY_MAX_CLIENTS];
 #endif
 
 #if defined(MY_USE_UDP)
@@ -60,8 +59,9 @@ typedef struct
 #endif
 
 
-#if defined(MY_GATEWAY_ESP8266)
+#if defined(MY_GATEWAY_ESP8266) || defined(MY_GATEWAY_LINUX)
 	static EthernetClient clients[MY_GATEWAY_MAX_CLIENTS];
+	static bool clientsConnected[MY_GATEWAY_MAX_CLIENTS];
 	static inputBuffer inputString[MY_GATEWAY_MAX_CLIENTS];
 #else
 	static EthernetClient client = EthernetClient();
@@ -119,8 +119,7 @@ bool gatewayTransportInit() {
 			MY_SERIALDEVICE.print(F("IP: "));
 			MY_SERIALDEVICE.println(WiFi.localIP());
 		#endif
-
-	#else
+	#elif !defined(MY_GATEWAY_LINUX)
 		#ifdef MY_IP_ADDRESS
 			Ethernet.begin(_ethernetGatewayMAC, _ethernetGatewayIP);
 		#else
@@ -140,8 +139,12 @@ bool gatewayTransportInit() {
 	#ifdef MY_USE_UDP
 		_ethernetServer.begin(_ethernetGatewayPort);
 	#else
-		// we have to use pointers due to the constructor of EthernetServer
-		_ethernetServer.begin();
+		#if defined(MY_GATEWAY_LINUX) && defined(MY_IP_ADDRESS)
+			_ethernetServer.begin(_ethernetGatewayIP);
+		#else
+			// we have to use pointers due to the constructor of EthernetServer
+			_ethernetServer.begin();
+		#endif
 	#endif /* USE_UDP */
 	_w5100_spi_en(false);
 	return true;
@@ -195,7 +198,7 @@ bool gatewayTransportSend(MyMessage &message)
 }
 
 
-#if defined(MY_GATEWAY_ESP8266)
+#if defined(MY_GATEWAY_ESP8266) || defined(MY_GATEWAY_LINUX)
 	bool _readFromClient(uint8_t i) {
 		while (clients[i].connected() && clients[i].available()) {
 			char inChar = clients[i].read();
@@ -285,7 +288,7 @@ bool gatewayTransportAvailable()
 			#endif
 		}
 	#else
-		#if defined(MY_GATEWAY_ESP8266)
+		#if defined(MY_GATEWAY_ESP8266) || defined(MY_GATEWAY_LINUX)
 			// ESP8266: Go over list of clients and stop any that are no longer connected.
 			// If the server has a new client connection it will be assigned to a free slot.
 			bool allSlotsOccupied = true;
@@ -364,7 +367,7 @@ MyMessage& gatewayTransportReceive()
 }
 
 
-#if !defined(MY_IP_ADDRESS) && !defined(MY_GATEWAY_ESP8266)
+#if !defined(MY_IP_ADDRESS) && !defined(MY_GATEWAY_ESP8266) && !defined(MY_GATEWAY_LINUX)
 void gatewayTransportRenewIP()
 {
 	/* renew/rebind IP address

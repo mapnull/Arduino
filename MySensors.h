@@ -225,7 +225,7 @@
 	#include "core/MyProtocolMySensors.cpp"
 
 	#if defined(MY_GATEWAY_LINUX)
-		#include "core/MyGatewayTransportEthernetLinux.cpp"
+		#include "core/MyGatewayTransportMQTTClientLinux.cpp"
 	#else
 		#include "drivers/PubSubClient/PubSubClient.cpp"
 		#include "core/MyGatewayTransportMQTTClient.cpp"
@@ -252,7 +252,10 @@
 		#include "core/MyGatewayTransportEthernet.cpp"
 	#elif defined(MY_GATEWAY_LINUX)
 		// GATEWAY - Generic Linux (RaspberryPi, BBB, ...)
-		#include "core/MyGatewayTransportEthernetLinux.cpp"
+		#include "drivers/Ethernet/EthernetClient.cpp"
+		#include "drivers/Ethernet/EthernetServer.cpp"
+		#include "drivers/Ethernet/IPAddress.cpp"
+		#include "core/MyGatewayTransportEthernet.cpp"
 	#elif defined(MY_GATEWAY_W5100)
 		// GATEWAY - W5100
 		#include "core/MyGatewayTransportEthernet.cpp"

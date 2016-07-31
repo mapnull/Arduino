@@ -6,8 +6,8 @@
  * network topology allowing messages to be routed to nodes.
  *
  * Created by Marcelo Aquino <marceloaqno@gmail.org>
- * Copyleft (c) 2016, Marcelo Aquino
- * Full contributor list: https://github.com/mysensors/Arduino/graphs/contributors
+ * Copyright (C) 2016 Marcelo Aquino
+ * Full contributor list: https://github.com/mysensors/MySensors/graphs/contributors
  *
  * Documentation: http://www.mysensors.org
  * Support Forum: http://forum.mysensors.org
@@ -25,7 +25,7 @@
 #include <fstream>
 #include <sys/stat.h>
 
-static const char* CONFIG_FILE = MY_CONFIG_FILE;
+static const char* CONFIG_FILE = MY_LINUX_CONFIG_FILE;
 static const size_t _length = 1024;	// ATMega328 has 1024 bytes
 static uint8_t _config[_length];	
 static unsigned long millis_at_start;
