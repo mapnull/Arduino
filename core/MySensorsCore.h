@@ -413,6 +413,17 @@ bool _sendRoute(MyMessage &message);
 */
 void receive(const MyMessage &message)  __attribute__((weak));
 /**
+* @brief Custom function for transport send write
+* @param to
+* @param message
+*/
+bool externalTransportSendWrite(const uint8_t to, MyMessage &message) __attribute__((weak));
+/**
+* @brief Custom function for transport receive
+* @param data
+*/
+uint8_t externalTransportReceive(uint8_t *data) __attribute__((weak));
+/**
 * @brief Callback for incoming time messages
 */
 void receiveTime(uint32_t)  __attribute__((weak));

@@ -559,7 +559,12 @@ bool transportRouteMessage(MyMessage &message)
 #endif
 	}
 	// send message
-	const bool result = transportSendWrite(route, message);
+	bool result;
+	if (externalTransportSendWrite) {
+		result = externalTransportSendWrite(route, message);
+	} else {
+		result = transportSendWrite(route, message);
+	}
 #if !defined(MY_GATEWAY_FEATURE)
 	// update counter
 	if (route == _transportConfig.parentNodeId) {
@@ -644,14 +649,11 @@ uint32_t transportGetHeartbeat(void)
 	return transportTimeInState();
 }
 
-void transportProcessMessage(void)
+void transportProcessMessage(MyMessage &_msg, uint8_t payloadLength)
 {
 	// Manage signing timeout
 	(void)signerCheckTimer();
-	// receive message
-	setIndication(INDICATION_RX);
-	uint8_t payloadLength = transportReceive((uint8_t *)
-	                        &_msg.last); // last is the first byte of the payload buffer
+
 	// get message length and limit size
 	const uint8_t msgLength = min(mGetLength(_msg), (uint8_t)MAX_PAYLOAD);
 	// calculate expected length
@@ -973,9 +975,24 @@ void transportProcessFIFO(void)
 #endif
 
 	uint8_t _processedMessages = MAX_SUBSEQ_MSGS;
+	if (externalTransportReceive) {
+		while (_processedMessages--) {
+			// receive message
+			uint8_t externalPayloadLength = externalTransportReceive((uint8_t *)&_msg.last);
+			if (externalPayloadLength == 0) {
+				break;
+			}
+			transportProcessMessage(_msg, externalPayloadLength);
+		}
+	}
+	_processedMessages = MAX_SUBSEQ_MSGS;
 	// process all msgs in FIFO or counter exit
 	while (transportAvailable() && _processedMessages--) {
-		transportProcessMessage();
+		// receive message
+		setIndication(INDICATION_RX);
+		uint8_t payloadLength = transportReceive((uint8_t *)
+		                        &_msg.last); // last is the first byte of the payload buffer
+		transportProcessMessage(_msg, payloadLength);
 	}
 #if defined(MY_OTA_FIRMWARE_FEATURE)
 	if (isTransportReady()) {

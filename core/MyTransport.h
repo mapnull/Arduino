@@ -355,7 +355,7 @@ void transportProcessFIFO(void);
 /**
 * @brief Receive message from RX FIFO and process
 */
-void transportProcessMessage(void);
+void transportProcessMessage(MyMessage &_msg, uint8_t payloadLength);
 /**
 * @brief Assign node ID
 * @param newNodeId New node ID
