@@ -295,7 +295,7 @@ MY_DEFAULT_RX_LED_PIN in your sketch instead to enable LEDs
 #endif
 
 // TRANSPORT INCLUDES
-#if defined(MY_RADIO_RF24) || defined(MY_RADIO_NRF5_ESB) || defined(MY_RADIO_RFM69) || defined(MY_RADIO_RFM95) || defined(MY_RS485)
+#ifdef MY_SENSOR_NETWORK
 #include "hal/transport/MyTransportHAL.h"
 #include "core/MyTransport.h"
 
